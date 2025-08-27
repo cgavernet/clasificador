@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detector de Colores</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            max-width: 1000px;
+            width: 100%;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .description {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        
+        .video-container {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        #video-feed {
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            max-width: 100%;
+            height: auto;
+        }
+        
+        .detection-info {
+            margin-top: 15px;
+            padding: 15px;
+            background: #e8f5e8;
+            border-radius: 8px;
+            border-left: 4px solid #28a745;
+        }
+        
+        .detection-info p {
+            margin: 5px 0;
+            color: #155724;
+            font-weight: 500;
+        }
+        
+        .color-info {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .color-display {
+            text-align: center;
+            padding: 20px;
+            border-radius: 10px;
+            background: #f8f9fa;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            min-width: 150px;
+        }
+        
+        .color-box {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 0 auto 10px;
+            border: 3px solid #ddd;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .color-box:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .rgb-values {
+            font-family: 'Courier New', monospace;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .hex-value {
+            font-family: 'Courier New', monospace;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .color-selectors {
+            margin-top: 20px;
+        }
+        
+        .color-selectors h3 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+        
+        .selectors-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .color-selector {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+        
+        .color-selector:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .selector-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .color-input {
+            width: 50px;
+            height: 50px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        .margin-slider {
+            flex: 1;
+            height: 6px;
+            border-radius: 3px;
+            background: #ddd;
+            outline: none;
+            cursor: pointer;
+        }
+        
+        .margin-value {
+            font-weight: bold;
+            color: #666;
+            min-width: 30px;
+            text-align: center;
+        }
+        
+        .check-indicator {
+            font-size: 1.5em;
+            font-weight: bold;
+            min-width: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .check-indicator.match {
+            color: #28a745;
+            transform: scale(1.2);
+        }
+        
+        .selector-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .color-name {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .margin-text {
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        .status {
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        
+        .status.online {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.offline {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+                margin: 10px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            .color-info {
+                flex-direction: column;
+            }
+            
+            .selectors-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Detector de Colores</h1>
+        <p class="description">Detección en cuadro central de 100x100 píxeles</p>
+        
+        <div class="video-container">
+            <img id="video-feed" src="{{ url_for('video_feed') }}" alt="Cámara en vivo">
+            <div class="detection-info">
+                <p>🟢 Cuadro verde: Área de detección</p>
+                <p>📱 Coloca objetos en el centro para detectar su color</p>
+            </div>
+        </div>
+        
+        <div class="color-info">
+            <div class="color-display">
+                <div id="color-box" class="color-box"></div>
+                <div id="rgb-values" class="rgb-values">RGB: (0, 0, 0)</div>
+                <div id="hex-value" class="hex-value">#000000</div>
+            </div>
+        </div>
+        
+        <div class="color-selectors">
+            <h3>🎯 Selectores de Color</h3>
+            <div class="selectors-grid">
+                <div class="color-selector" data-id="1">
+                    <div class="selector-header">
+                        <input type="color" id="color1" value="#ff0000" class="color-input">
+                        <input type="range" id="margin1" min="0" max="100" value="20" class="margin-slider">
+                        <span class="margin-value">20</span>
+                        <div class="check-indicator" id="check1">❌</div>
+                    </div>
+                    <div class="selector-info">
+                        <span class="color-name">Rojo</span>
+                        <span class="margin-text">Margen: ±20</span>
+                    </div>
+                </div>
+                
+                <div class="color-selector" data-id="2">
+                    <div class="selector-header">
+                        <input type="color" id="color2" value="#00ff00" class="color-input">
+                        <input type="range" id="margin2" min="0" max="100" value="20" class="margin-slider">
+                        <span class="margin-value">20</span>
+                        <div class="check-indicator" id="check2">❌</div>
+                    </div>
+                    <div class="selector-info">
+                        <span class="color-name">Verde</span>
+                        <span class="margin-text">Margen: ±20</span>
+                    </div>
+                </div>
+                
+                <div class="color-selector" data-id="3">
+                    <div class="selector-header">
+                        <input type="color" id="color3" value="#0000ff" class="color-input">
+                        <input type="range" id="margin3" min="0" max="100" value="20" class="margin-slider">
+                        <span class="margin-value">20</span>
+                        <div class="check-indicator" id="check3">❌</div>
+                    </div>
+                    <div class="selector-info">
+                        <span class="color-name">Azul</span>
+                        <span class="margin-text">Margen: ±20</span>
+                    </div>
+                </div>
+                
+                <div class="color-selector" data-id="4">
+                    <div class="selector-header">
+                        <input type="color" id="color4" value="#ffff00" class="color-input">
+                        <input type="range" id="margin4" min="0" max="100" value="20" class="margin-slider">
+                        <span class="margin-value">20</span>
+                        <div class="check-indicator" id="check4">❌</div>
+                    </div>
+                    <div class="selector-info">
+                        <span class="color-name">Amarillo</span>
+                        <span class="margin-text">Margen: ±20</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="status" class="status offline">
+            Estado: Conectando...
+        </div>
+    </div>
+
+    <script>
+        // Configuración de selectores
+        const selectors = [
+            { id: 1, color: '#ff0000', margin: 20, name: 'Rojo' },
+            { id: 2, color: '#00ff00', margin: 20, name: 'Verde' },
+            { id: 3, color: '#0000ff', margin: 20, name: 'Azul' },
+            { id: 4, color: '#ffff00', margin: 20, name: 'Amarillo' }
+        ];
+        
+        // Función para convertir hex a RGB
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : null;
+        }
+        
+        // Función para calcular distancia entre colores
+        function colorDistance(color1, color2) {
+            const dr = color1.r - color2.r;
+            const dg = color1.g - color2.g;
+            const db = color1.b - color2.b;
+            return Math.sqrt(dr * dr + dg * dg + db * db);
+        }
+        
+        // Función para verificar si un color coincide
+        function checkColorMatch(detectedColor, targetColor, margin) {
+            const distance = colorDistance(detectedColor, targetColor);
+            return distance <= margin;
+        }
+        
+        // Función para actualizar el color
+        function updateColor() {
+            fetch('/api/color')
+                .then(response => response.json())
+                .then(data => {
+                    const colorBox = document.getElementById('color-box');
+                    const rgbValues = document.getElementById('rgb-values');
+                    const hexValue = document.getElementById('hex-value');
+                    
+                    // Actualiza el color del círculo
+                    colorBox.style.backgroundColor = data.hex;
+                    
+                    // Actualiza los valores RGB
+                    rgbValues.textContent = `RGB: (${data.r}, ${data.g}, ${data.b})`;
+                    
+                    // Actualiza el valor hexadecimal
+                    hexValue.textContent = data.hex;
+                    
+                    // Verifica coincidencias con los selectores
+                    const detectedColor = { r: data.r, g: data.g, b: data.b };
+                    
+                    selectors.forEach(selector => {
+                        const targetColor = hexToRgb(selector.color);
+                        const checkElement = document.getElementById(`check${selector.id}`);
+                        
+                        if (checkColorMatch(detectedColor, targetColor, selector.margin)) {
+                            checkElement.textContent = '✅';
+                            checkElement.className = 'check-indicator match';
+                        } else {
+                            checkElement.textContent = '❌';
+                            checkElement.className = 'check-indicator';
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('Error al obtener color:', error);
+                });
+        }
+        
+        // Función para verificar el estado
+        function checkStatus() {
+            fetch('/api/status')
+                .then(response => response.json())
+                .then(data => {
+                    const statusDiv = document.getElementById('status');
+                    if (data.camera_running && data.camera_opened) {
+                        statusDiv.textContent = 'Estado: Cámara activa';
+                        statusDiv.className = 'status online';
+                    } else {
+                        statusDiv.textContent = 'Estado: Cámara inactiva';
+                        statusDiv.className = 'status offline';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al verificar estado:', error);
+                    document.getElementById('status').textContent = 'Estado: Error de conexión';
+                    document.getElementById('status').className = 'status offline';
+                });
+        }
+        
+        // Configurar event listeners para los selectores
+        function setupSelectors() {
+            selectors.forEach(selector => {
+                const colorInput = document.getElementById(`color${selector.id}`);
+                const marginSlider = document.getElementById(`margin${selector.id}`);
+                const marginValue = document.querySelector(`#margin${selector.id} + .margin-value`);
+                const marginText = document.querySelector(`[data-id="${selector.id}"] .margin-text`);
+                
+                // Actualizar color
+                colorInput.addEventListener('change', (e) => {
+                    selector.color = e.target.value;
+                    updateColor();
+                });
+                
+                // Actualizar margen
+                marginSlider.addEventListener('input', (e) => {
+                    selector.margin = parseInt(e.target.value);
+                    marginValue.textContent = e.target.value;
+                    marginText.textContent = `Margen: ±${e.target.value}`;
+                    updateColor();
+                });
+            });
+        }
+        
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', () => {
+            setupSelectors();
+            
+            // Actualiza el color cada 100ms
+            setInterval(updateColor, 100);
+            
+            // Verifica el estado cada 2 segundos
+            setInterval(checkStatus, 2000);
+            
+            // Verificación inicial
+            checkStatus();
+        });
+    </script>
+</body>
+</html>
