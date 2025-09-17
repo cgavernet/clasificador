@@ -1,5 +1,4 @@
-#!/bin/bash
-
+#!/bi
 echo "🚀 Configurando Raspberry Pi para Detector de Colores con Servo"
 echo "================================================================"
 
