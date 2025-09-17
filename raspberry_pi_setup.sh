@@ -18,6 +18,8 @@ sudo usermod -a -G video $USER
 # Instalar dependencias de Python
 echo "🐍 Instalando dependencias de Python..."
 pip3 install --upgrade pip
+# Eliminar opencv-python del requirements.txt si existe
+sed -i '/opencv-python/d' requirements.txt
 pip3 install -r requirements.txt
 
 # Configurar cámara
