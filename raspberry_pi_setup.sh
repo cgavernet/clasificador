@@ -1,4 +1,4 @@
-#!/bi
+#!/bin/bash
 echo "🚀 Configurando Raspberry Pi para Detector de Colores con Servo"
 echo "================================================================"
 
@@ -85,16 +85,17 @@ echo "🤔 ¿Deseas configurar inicio automático? (y/n)"
 read -r response
 if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]; then
     echo "📋 Creando servicio systemd..."
-    sudo tee /etc/systemd/system/color-detector.service > /dev/null << EOF
+  sudo tee /etc/systemd/system/color-detector.service > /dev/null << EOF
 [Unit]
 Description=Detector de Colores con Servo
-After=network.target
+After=network.target boot-complete.target
 
 [Service]
 Type=simple
 User=$USER
 WorkingDirectory=$(pwd)
-ExecStart=/usr/bin/python3 color_detector.py
+ExecStart=/usr/bin/python3 $(pwd)/color_detector.py
+Environment="DISPLAY=:0"
 Restart=always
 RestartSec=10
 
