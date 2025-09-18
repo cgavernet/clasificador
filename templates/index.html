@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detector de Colores con Servo</title>
+    <title>Clasificador inteligente de residuos</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -89,69 +89,20 @@
             width: 80px;
             height: 80px;
             border-radius: 50%;
-            margin: 0 auto 10px;
-            border: 3px solid #ddd;
+            border: 3px solid #333;
+            margin: 0 auto 15px;
             box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
             transition: all 0.3s ease;
         }
         
-        .color-box:hover {
-            transform: scale(1.1);
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
-        }
-        
-        .rgb-values {
+        .rgb-values, .hex-value {
             font-family: 'Courier New', monospace;
-            font-size: 1.1em;
             font-weight: bold;
+            margin: 5px 0;
             color: #333;
         }
         
-        .hex-value {
-            font-family: 'Courier New', monospace;
-            font-size: 1.2em;
-            font-weight: bold;
-            color: #666;
-            margin-top: 5px;
-        }
-        
-        .color-selectors {
-            margin-top: 20px;
-        }
-        
-        .color-selectors h3 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 20px;
-            font-size: 1.5em;
-        }
-        
-        .servo-config {
-            margin-bottom: 20px;
-            padding: 15px;
-            background: #f0f7fa;
-            border-radius: 8px;
-            border: 1px solid #cce5ff;
-        }
-        
-        .servo-config h4 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 10px;
-            font-size: 1.2em;
-        }
-        
-        .servo-settings {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        
-        .servo-settings label {
-            font-size: 0.9em;
-            color: #555;
-        }
+        /* Eliminado todo lo relacionado al servo */
         
         .pin-input {
             width: 80px;
@@ -259,31 +210,6 @@
             color: #666;
         }
         
-        .servo-controls {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 10px;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 5px;
-            border: 1px solid #e9ecef;
-        }
-        
-        .servo-controls label {
-            font-size: 0.9em;
-            color: #555;
-            white-space: nowrap;
-        }
-        
-        .angle-input {
-            width: 80px;
-            height: 30px;
-            padding: 5px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            text-align: center;
-        }
         
         .config-actions {
             display: flex;
@@ -346,10 +272,6 @@
                 grid-template-columns: 1fr;
             }
             
-            .servo-settings, .servo-controls {
-                flex-direction: column;
-                align-items: stretch;
-            }
             
             .config-actions {
                 flex-direction: column;
@@ -360,15 +282,15 @@
 </head>
 <body>
     <div class="container">
-        <h1>🎨 Detector de Colores con Servo</h1>
-        <p class="description">Detección en cuadro central de 100x100 píxeles + Control de Servo</p>
+    <h1>♻️ Clasificador inteligente de residuos</h1>
+    <p class="description">Detección en cuadro central de 100x100 píxeles</p>
         
         <div class="video-container">
             <img id="video-feed" src="{{ url_for('video_feed') }}" alt="Cámara en vivo">
             <div class="detection-info">
                 <p>🟢 Cuadro verde: Área de detección</p>
                 <p>📱 Coloca objetos en el centro para detectar su color</p>
-                <p>⚙️ El servo se moverá automáticamente al detectar colores</p>
+                <!-- Mensaje de servo eliminado -->
             </div>
         </div>
         
@@ -383,14 +305,6 @@
         <div class="color-selectors">
             <h3>🎯 Selectores de Color</h3>
             
-            <div class="servo-config">
-                <h4>⚙️ Configuración del Servo</h4>
-                <div class="servo-settings">
-                    <label for="servo-pin">Pin del Servo:</label>
-                    <input type="number" id="servo-pin" min="1" max="40" value="18" class="pin-input">
-                    <button id="save-servo" class="save-btn">💾 Guardar</button>
-                </div>
-            </div>
             
             <div class="selectors-grid">
                 <div class="color-selector" data-id="1">
@@ -403,11 +317,6 @@
                     <div class="selector-info">
                         <span class="color-name">Rojo</span>
                         <span class="margin-text">Margen: ±20</span>
-                    </div>
-                    <div class="servo-controls">
-                        <label for="angle1">Ángulo Servo (0-180°):</label>
-                        <input type="number" id="angle1" min="0" max="180" value="0" class="angle-input">
-                        <button class="save-selector" data-id="1">💾</button>
                     </div>
                 </div>
                 
@@ -422,11 +331,6 @@
                         <span class="color-name">Verde</span>
                         <span class="margin-text">Margen: ±20</span>
                     </div>
-                    <div class="servo-controls">
-                        <label for="angle2">Ángulo Servo (0-180°):</label>
-                        <input type="number" id="angle2" min="0" max="180" value="45" class="angle-input">
-                        <button class="save-selector" data-id="2">💾</button>
-                    </div>
                 </div>
                 
                 <div class="color-selector" data-id="3">
@@ -440,11 +344,6 @@
                         <span class="color-name">Azul</span>
                         <span class="margin-text">Margen: ±20</span>
                     </div>
-                    <div class="servo-controls">
-                        <label for="angle3">Ángulo Servo (0-180°):</label>
-                        <input type="number" id="angle3" min="0" max="180" value="90" class="angle-input">
-                        <button class="save-selector" data-id="3">💾</button>
-                    </div>
                 </div>
                 
                 <div class="color-selector" data-id="4">
@@ -457,11 +356,6 @@
                     <div class="selector-info">
                         <span class="color-name">Amarillo</span>
                         <span class="margin-text">Margen: ±20</span>
-                    </div>
-                    <div class="servo-controls">
-                        <label for="angle4">Ángulo Servo (0-180°):</label>
-                        <input type="number" id="angle4" min="0" max="180" value="135" class="angle-input">
-                        <button class="save-selector" data-id="4">💾</button>
                     </div>
                 </div>
             </div>
@@ -481,7 +375,6 @@
     <script>
         // Configuración de selectores (se cargará desde config.json)
         let selectors = [];
-        let servoPin = 18;
         let lastMatchedSelector = null;
         
         // Función para cargar configuración desde archivo JSON
@@ -491,7 +384,6 @@
                 const config = await response.json();
                 
                 selectors = config.selectors;
-                servoPin = config.servo_pin;
                 
                 // Actualizar interfaz con la configuración cargada
                 updateInterfaceFromConfig();
@@ -507,33 +399,27 @@
         // Función para usar configuración por defecto
         function useDefaultConfig() {
             selectors = [
-                { id: 1, color: '#ff0000', margin: 20, name: 'Rojo', angle: 0 },
-                { id: 2, color: '#00ff00', margin: 20, name: 'Verde', angle: 45 },
-                { id: 3, color: '#0000ff', margin: 20, name: 'Azul', angle: 90 },
-                { id: 4, color: '#ffff00', margin: 20, name: 'Amarillo', angle: 135 }
+                { id: 1, color: '#ff0000', margin: 20, name: 'Rojo' },
+                { id: 2, color: '#00ff00', margin: 20, name: 'Verde' },
+                { id: 3, color: '#0000ff', margin: 20, name: 'Azul' },
+                { id: 4, color: '#ffff00', margin: 20, name: 'Amarillo' }
             ];
-            servoPin = 18;
             updateInterfaceFromConfig();
         }
         
         // Función para actualizar la interfaz desde la configuración
         function updateInterfaceFromConfig() {
-            // Actualizar pin del servo
-            document.getElementById('servo-pin').value = servoPin;
-            
             // Actualizar cada selector
             selectors.forEach(selector => {
                 const colorInput = document.getElementById(`color${selector.id}`);
                 const marginSlider = document.getElementById(`margin${selector.id}`);
-                const marginValue = document.querySelector(`#margin${selector.id} + .margin-value`);
+                const marginValue = marginSlider ? marginSlider.nextElementSibling : null;
                 const marginText = document.querySelector(`[data-id="${selector.id}"] .margin-text`);
-                const angleInput = document.getElementById(`angle${selector.id}`);
                 
                 if (colorInput) colorInput.value = selector.color;
                 if (marginSlider) marginSlider.value = selector.margin;
                 if (marginValue) marginValue.textContent = selector.margin;
                 if (marginText) marginText.textContent = `Margen: ±${selector.margin}`;
-                if (angleInput) angleInput.value = selector.angle;
             });
         }
         
@@ -542,16 +428,13 @@
             try {
                 // Recopilar configuración actual
                 const config = {
-                    servo_pin: parseInt(document.getElementById('servo-pin').value),
                     selectors: selectors.map(selector => ({
                         id: selector.id,
                         color: selector.color,
                         margin: selector.margin,
-                        name: selector.name,
-                        angle: selector.angle
+                        name: selector.name
                     }))
                 };
-                
                 const response = await fetch('/api/config', {
                     method: 'POST',
                     headers: {
@@ -559,7 +442,6 @@
                     },
                     body: JSON.stringify(config)
                 });
-                
                 if (response.ok) {
                     console.log('Configuración guardada exitosamente');
                     showNotification('✅ Configuración guardada', 'success');
@@ -621,24 +503,7 @@
             return distance <= margin;
         }
         
-        // Función para mover servo (solo en Raspberry Pi)
-        async function moveServo(angle) {
-            try {
-                const response = await fetch('/api/servo', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ angle: angle })
-                });
-                
-                if (response.ok) {
-                    console.log(`Servo movido a ${angle}°`);
-                }
-            } catch (error) {
-                console.error('Error al mover servo:', error);
-            }
-        }
+        // Eliminada función para mover servo
         
         // Función para actualizar el color
         function updateColor() {
@@ -650,13 +515,19 @@
                     const hexValue = document.getElementById('hex-value');
                     
                     // Actualiza el color del círculo
-                    colorBox.style.backgroundColor = data.hex;
+                    if (colorBox) {
+                        colorBox.style.backgroundColor = data.hex;
+                    }
                     
                     // Actualiza los valores RGB
-                    rgbValues.textContent = `RGB: (${data.r}, ${data.g}, ${data.b})`;
+                    if (rgbValues) {
+                        rgbValues.textContent = `RGB: (${data.r}, ${data.g}, ${data.b})`;
+                    }
                     
                     // Actualiza el valor hexadecimal
-                    hexValue.textContent = data.hex;
+                    if (hexValue) {
+                        hexValue.textContent = data.hex;
+                    }
                     
                     // Verifica coincidencias con los selectores
                     const detectedColor = { r: data.r, g: data.g, b: data.b };
@@ -665,8 +536,11 @@
                     selectors.forEach(selector => {
                         const targetColor = hexToRgb(selector.color);
                         const checkElement = document.getElementById(`check${selector.id}`);
-                        
-                        if (checkColorMatch(detectedColor, targetColor, selector.margin)) {
+                        if (!targetColor || !checkElement) {
+                            return;
+                        }
+                        const margin = typeof selector.margin === 'number' ? selector.margin : 20;
+                        if (checkColorMatch(detectedColor, targetColor, margin)) {
                             checkElement.textContent = '✅';
                             checkElement.className = 'check-indicator match';
                             matchedSelector = selector;
@@ -676,13 +550,7 @@
                         }
                     });
                     
-                    // Mover servo si hay una nueva coincidencia
-                    if (matchedSelector && matchedSelector !== lastMatchedSelector) {
-                        moveServo(matchedSelector.angle);
-                        lastMatchedSelector = matchedSelector;
-                    } else if (!matchedSelector) {
-                        lastMatchedSelector = null;
-                    }
+                    // Eliminada lógica de movimiento de servo
                 })
                 .catch(error => {
                     console.error('Error al obtener color:', error);
@@ -712,55 +580,51 @@
         
         // Configurar event listeners para los selectores
         function setupSelectors() {
-            selectors.forEach(selector => {
-                const colorInput = document.getElementById(`color${selector.id}`);
-                const marginSlider = document.getElementById(`margin${selector.id}`);
-                const marginValue = document.querySelector(`#margin${selector.id} + .margin-value`);
-                const marginText = document.querySelector(`[data-id="${selector.id}"] .margin-text`);
-                const angleInput = document.getElementById(`angle${selector.id}`);
-                
-                // Actualizar color
-                colorInput.addEventListener('change', (e) => {
-                    selector.color = e.target.value;
-                });
-                
-                // Actualizar margen
-                marginSlider.addEventListener('input', (e) => {
-                    selector.margin = parseInt(e.target.value);
-                    marginValue.textContent = e.target.value;
-                    marginText.textContent = `Margen: ±${e.target.value}`;
-                });
-                
-                // Actualizar ángulo
-                angleInput.addEventListener('input', (e) => {
-                    selector.angle = parseInt(e.target.value);
-                });
-            });
+            // Configurar cada slider individualmente
+            setupSlider(1);
+            setupSlider(2);
+            setupSlider(3);
+            setupSlider(4);
+        }
+        
+        function setupSlider(id) {
+            const marginSlider = document.getElementById(`margin${id}`);
+            const colorInput = document.getElementById(`color${id}`);
+            const marginValueSpan = marginSlider ? marginSlider.nextElementSibling : null;
+            const marginTextSpan = document.querySelector(`[data-id="${id}"] .margin-text`);
+            
+            if (marginSlider) {
+                marginSlider.oninput = function(e) {
+                    const value = parseInt(e.target.value);
+                    
+                    // Actualizar el objeto selector
+                    const selector = selectors.find(s => s.id === id);
+                    if (selector) {
+                        selector.margin = value;
+                    }
+                    
+                    // Actualizar la interfaz
+                    if (marginValueSpan) {
+                        marginValueSpan.textContent = value;
+                    }
+                    if (marginTextSpan) {
+                        marginTextSpan.textContent = `Margen: ±${value}`;
+                    }
+                };
+            }
+            
+            if (colorInput) {
+                colorInput.onchange = function(e) {
+                    const selector = selectors.find(s => s.id === id);
+                    if (selector) {
+                        selector.color = e.target.value;
+                    }
+                };
+            }
         }
         
         // Configurar event listeners para botones de configuración
         function setupConfigButtons() {
-            // Guardar pin del servo
-            document.getElementById('save-servo').addEventListener('click', () => {
-                servoPin = parseInt(document.getElementById('servo-pin').value);
-                saveConfiguration();
-            });
-            
-            // Guardar selector individual
-            document.querySelectorAll('.save-selector').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const selectorId = parseInt(e.target.dataset.id);
-                    const selector = selectors.find(s => s.id === selectorId);
-                    
-                    if (selector) {
-                        selector.color = document.getElementById(`color${selectorId}`).value;
-                        selector.margin = parseInt(document.getElementById(`margin${selectorId}`).value);
-                        selector.angle = parseInt(document.getElementById(`angle${selectorId}`).value);
-                        saveConfiguration();
-                    }
-                });
-            });
-            
             // Guardar toda la configuración
             document.getElementById('save-all-config').addEventListener('click', saveConfiguration);
             
@@ -775,22 +639,33 @@
         }
         
         // Inicializar
-        document.addEventListener('DOMContentLoaded', async () => {
+        document.addEventListener('DOMContentLoaded', () => {
             // Cargar configuración al inicio
-            await loadConfiguration();
-            
-            // Configurar interfaz
-            setupSelectors();
-            setupConfigButtons();
-            
-            // Actualiza el color cada 100ms
-            setInterval(updateColor, 100);
-            
-            // Verifica el estado cada 2 segundos
-            setInterval(checkStatus, 2000);
-            
-            // Verificación inicial
-            checkStatus();
+            loadConfiguration().then(() => {
+                // Configurar interfaz
+                setupSelectors();
+                setupConfigButtons();
+                
+                // Llamada inicial para pintar el color actual
+                updateColor();
+                
+                // Actualiza el color cada 100ms
+                setInterval(updateColor, 150);
+                
+                // Verifica el estado cada 2 segundos
+                setInterval(checkStatus, 2000);
+                
+                // Verificación inicial
+                checkStatus();
+            }).catch(() => {
+                // Incluso si falla la carga, inicializamos básicos
+                setupSelectors();
+                setupConfigButtons();
+                updateColor();
+                setInterval(updateColor, 150);
+                setInterval(checkStatus, 2000);
+                checkStatus();
+            });
         });
     </script>
 </body>

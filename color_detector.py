@@ -32,23 +32,7 @@ class ColorDetector:
     
     # ...función init_servo eliminada...
     
-    def move_servo(self, angle):
-        """Mueve el servo a un ángulo específico (0-180)"""
-        if not self.servo_initialized:
-            print("⚠️ Servo no inicializado")
-            return False
-        
-        try:
-            # Convertir ángulo a duty cycle (2.5% = 0°, 12.5% = 180°)
-            duty_cycle = 2.5 + (angle / 180.0) * 10.0
-            self.servo_pwm.ChangeDutyCycle(duty_cycle)
-            time.sleep(0.3)  # Esperar a que el servo se mueva
-            self.servo_pwm.ChangeDutyCycle(0)  # Detener señal
-            print(f"🎯 Servo movido a {angle}°")
-            return True
-        except Exception as e:
-            print(f"❌ Error al mover servo: {e}")
-            return False
+    # ...función move_servo eliminada...
     
     def load_config(self):
         """Carga la configuración desde el archivo JSON"""
@@ -140,7 +124,6 @@ class ColorDetector:
             
             # Obtener el color más frecuente
             dominant_color = colors[np.argmax(counts)]
-            
             return tuple(map(int, dominant_color))
         except Exception as e:
             print(f"Error en detección de color: {e}")
@@ -174,14 +157,6 @@ class ColorDetector:
     def cleanup(self):
         """Limpia recursos"""
         self.stop_camera()
-        if self.servo_initialized:
-            try:
-                self.servo_pwm.stop()
-                import RPi.GPIO as GPIO
-                GPIO.cleanup()
-                print("🧹 Recursos del servo limpiados")
-            except Exception:
-                pass
 
 
 # Instancia global del detector
@@ -216,8 +191,7 @@ def api_status():
     return jsonify({
         'camera_running': detector.camera_running,
         'camera_opened': (detector.camera is not None and 
-                          detector.camera.isOpened()),
-        'servo_available': detector.servo_initialized
+                          detector.camera.isOpened())
     })
 
 
@@ -237,17 +211,10 @@ def api_save_config():
         if not isinstance(config, dict):
             return jsonify({'error': 'Configuración inválida'}), 400
         
-        if 'servo_pin' not in config or 'selectors' not in config:
+        if 'selectors' not in config:
             return jsonify({'error': 'Configuración incompleta'}), 400
-        
         # Actualizar configuración
         detector.config = config
-        detector.servo_pin = config.get('servo_pin', 18)
-        
-        # Reinicializar servo si cambió el pin
-        if detector.servo_initialized:
-            detector.cleanup()
-            detector.init_servo()
         
         # Guardar en archivo
         if detector.save_config(config):
@@ -259,25 +226,7 @@ def api_save_config():
         return jsonify({'error': f'Error: {str(e)}'}), 500
 
 
-@app.route('/api/servo', methods=['POST'])
-def api_move_servo():
-    """API para mover el servo"""
-    try:
-        data = request.get_json()
-        angle = data.get('angle', 90)
-        
-        # Validar ángulo
-        if not isinstance(angle, (int, float)) or angle < 0 or angle > 180:
-            return jsonify({'error': 'Ángulo debe estar entre 0 y 180'}), 400
-        
-        # Mover servo
-        if detector.move_servo(int(angle)):
-            return jsonify({'message': f'Servo movido a {angle}°'})
-        else:
-            return jsonify({'error': 'Error al mover servo'}), 500
-            
-    except Exception as e:
-        return jsonify({'error': f'Error: {str(e)}'}), 500
+    # ...ruta /api/servo eliminada...
 
 
 def generate_frames():
@@ -326,7 +275,7 @@ def generate_frames():
 
 def main():
     """Función principal"""
-    print("🎨 Iniciando Detector de Colores con Servo...")
+    print("🎨 Iniciando Clasificador inteligente de residuos...")
     print("=" * 50)
     
     # Iniciar cámara
@@ -337,7 +286,7 @@ def main():
     try:
         print("🌐 Iniciando servidor web en http://localhost:5000")
         print("📱 Abre tu navegador y ve a la URL anterior")
-        print("⚙️ El servo se moverá automáticamente al detectar colores")
+    # ...mensaje de servo eliminado...
         print("💾 La configuración se guarda automáticamente en config.json")
         print("=" * 50)
         
