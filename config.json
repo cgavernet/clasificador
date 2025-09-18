@@ -1,8 +1,9 @@
 {
+  "tcp_ip": "192.168.1.38",
   "selectors": [
     {
       "id": 1,
-      "color": "#ff0000",
+      "color": "#928282",
       "margin": 89,
       "name": "Rojo"
     },

@@ -364,6 +364,8 @@
                 <button id="save-all-config" class="save-all-btn">💾 Guardar Toda la Configuración</button>
                 <button id="load-config" class="load-btn">📂 Cargar Configuración</button>
                 <button id="reset-config" class="reset-btn">🔄 Restaurar Valores por Defecto</button>
+            <input type="text" id="tcp-ip" class="pin-input" placeholder="IP destino" value="192.168.1.50">
+            <button id="send-tcp" class="save-all-btn">🔌 Enviar "servo1" por TCP</button>
             </div>
         </div>
         
@@ -384,6 +386,8 @@
                 const config = await response.json();
                 
                 selectors = config.selectors;
+                const ipInput = document.getElementById('tcp-ip');
+                if (ipInput) ipInput.value = (config.tcp_ip || '').toString();
                 
                 // Actualizar interfaz con la configuración cargada
                 updateInterfaceFromConfig();
@@ -404,6 +408,8 @@
                 { id: 3, color: '#0000ff', margin: 20, name: 'Azul' },
                 { id: 4, color: '#ffff00', margin: 20, name: 'Amarillo' }
             ];
+            const ipInput = document.getElementById('tcp-ip');
+            if (ipInput) ipInput.value = '';
             updateInterfaceFromConfig();
         }
         
@@ -428,6 +434,7 @@
             try {
                 // Recopilar configuración actual
                 const config = {
+                    tcp_ip: (document.getElementById('tcp-ip')?.value || '').toString(),
                     selectors: selectors.map(selector => ({
                         id: selector.id,
                         color: selector.color,
@@ -636,6 +643,31 @@
                 useDefaultConfig();
                 saveConfiguration();
             });
+
+            // Enviar TCP 'servo1'
+            const btnSendTcp = document.getElementById('send-tcp');
+            if (btnSendTcp) {
+                btnSendTcp.addEventListener('click', async () => {
+                    const ipInput = document.getElementById('tcp-ip');
+                    const ip = ipInput ? ipInput.value.trim() : '';
+                    if (!ip) { showNotification('❌ Ingresa IP destino', 'error'); return; }
+                    try {
+                        const res = await fetch('/api/send-tcp', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ ip })
+                        });
+                        const data = await res.json();
+                        if (data.ok) {
+                            showNotification(`🔌 TCP enviado a ${ip}: servo1`, 'success');
+                        } else {
+                            showNotification('❌ Error TCP: ' + (data.error || 'desconocido'), 'error');
+                        }
+                    } catch (e) {
+                        showNotification('❌ Error de red TCP', 'error');
+                    }
+                });
+            }
         }
         
         // Inicializar
