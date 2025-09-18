@@ -12,7 +12,8 @@ sudo apt install -y python3-pip python3-opencv libatlas-base-dev python3-dev
 
 # Configurar GPIO para el usuario
 echo "⚡ Configurando GPIO..."
-sudo usermod -a -G gpio $USER
+  # Asegurar que el usuario del servicio tenga permisos GPIO
+  sudo usermod -a -G gpio $USER
 sudo usermod -a -G video $USER
 
 # Instalar dependencias de Python
@@ -34,8 +35,9 @@ sudo raspi-config nonint do_camera 0
 
 # Configurar permisos de GPIO
 echo "🔐 Configurando permisos de GPIO..."
-sudo chown root:gpio /dev/gpiomem
-sudo chmod g+rw /dev/gpiomem
+  sudo chown root:gpio /dev/gpiomem
+  sudo chmod g+rw /dev/gpiomem
+  echo "⚠️  Si usas systemd, asegúrate que el usuario en el archivo de servicio sea: $USER"
 
 # Crear archivo de configuración por defecto
 echo "📝 Creando archivo de configuración..."
