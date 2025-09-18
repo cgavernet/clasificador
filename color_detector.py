@@ -28,34 +28,9 @@ class ColorDetector:
         self.current_color = (0, 0, 0)
         self.config_file = 'config.json'
         self.config = self.load_config()
-        self.servo_pin = self.config.get('servo_pin', 18)
-        
-        # Inicializar servo (solo en Raspberry Pi)
-        self.servo_initialized = False
-        self.init_servo()
+            # Eliminado código relacionado al servo
     
-    def init_servo(self):
-        """Inicializa el servo (solo en Raspberry Pi)"""
-        try:
-            # Verificar si estamos en Raspberry Pi
-            if os.path.exists('/proc/cpuinfo'):
-                with open('/proc/cpuinfo', 'r') as f:
-                    if 'Raspberry Pi' in f.read():
-                        import RPi.GPIO as GPIO
-                        GPIO.setmode(GPIO.BCM)
-                        GPIO.setup(self.servo_pin, GPIO.OUT)
-                        # 50Hz para servo estándar
-                        self.servo_pwm = GPIO.PWM(self.servo_pin, 50)
-                        self.servo_pwm.start(0)
-                        self.servo_initialized = True
-                        print(f"✅ Servo inicializado en pin {self.servo_pin}")
-                        return
-            
-            print("⚠️ No se detectó Raspberry Pi, el servo no estará disponible")
-        except ImportError:
-            print("⚠️ RPi.GPIO no disponible, el servo no estará disponible")
-        except Exception as e:
-            print(f"❌ Error al inicializar servo: {e}")
+    # ...función init_servo eliminada...
     
     def move_servo(self, angle):
         """Mueve el servo a un ángulo específico (0-180)"""

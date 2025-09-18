@@ -89,7 +89,7 @@ if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]; then
     echo "📋 Creando servicio systemd..."
   sudo tee /etc/systemd/system/color-detector.service > /dev/null << EOF
 [Unit]
-Description=Detector de Colores con Servo
+Description=Clasificador inteligente de residuos
 After=network.target boot-complete.target
 
 [Service]
