@@ -85,23 +85,6 @@
             min-width: 150px;
         }
         
-        .color-box {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            border: 3px solid #333;
-            margin: 0 auto 15px;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s ease;
-        }
-        
-        .rgb-values, .hex-value {
-            font-family: 'Courier New', monospace;
-            font-weight: bold;
-            margin: 5px 0;
-            color: #333;
-        }
-        
         /* Eliminado todo lo relacionado al servo */
         
         .pin-input {
@@ -210,6 +193,31 @@
             color: #666;
         }
         
+        .servo-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .servo-controls label {
+            font-size: 0.9em;
+            color: #555;
+            white-space: nowrap;
+        }
+        
+        .angle-input {
+            width: 80px;
+            height: 30px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            text-align: center;
+        }
         
         .config-actions {
             display: flex;
@@ -272,6 +280,10 @@
                 grid-template-columns: 1fr;
             }
             
+            .servo-settings, .servo-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
             
             .config-actions {
                 flex-direction: column;
@@ -305,6 +317,7 @@
         <div class="color-selectors">
             <h3>🎯 Selectores de Color</h3>
             
+            <!-- Configuración del servo eliminada -->
             
             <div class="selectors-grid">
                 <div class="color-selector" data-id="1">
@@ -318,6 +331,7 @@
                         <span class="color-name">Rojo</span>
                         <span class="margin-text">Margen: ±20</span>
                     </div>
+                    <!-- Controles de servo eliminados -->
                 </div>
                 
                 <div class="color-selector" data-id="2">
@@ -331,6 +345,7 @@
                         <span class="color-name">Verde</span>
                         <span class="margin-text">Margen: ±20</span>
                     </div>
+                    <!-- Controles de servo eliminados -->
                 </div>
                 
                 <div class="color-selector" data-id="3">
@@ -344,6 +359,7 @@
                         <span class="color-name">Azul</span>
                         <span class="margin-text">Margen: ±20</span>
                     </div>
+                    <!-- Controles de servo eliminados -->
                 </div>
                 
                 <div class="color-selector" data-id="4">
@@ -357,6 +373,7 @@
                         <span class="color-name">Amarillo</span>
                         <span class="margin-text">Margen: ±20</span>
                     </div>
+                    <!-- Controles de servo eliminados -->
                 </div>
             </div>
             
@@ -364,8 +381,6 @@
                 <button id="save-all-config" class="save-all-btn">💾 Guardar Toda la Configuración</button>
                 <button id="load-config" class="load-btn">📂 Cargar Configuración</button>
                 <button id="reset-config" class="reset-btn">🔄 Restaurar Valores por Defecto</button>
-            <input type="text" id="tcp-ip" class="pin-input" placeholder="IP destino" value="192.168.1.50">
-            <button id="send-tcp" class="save-all-btn">🔌 Enviar "servo1" por TCP</button>
             </div>
         </div>
         
@@ -377,6 +392,7 @@
     <script>
         // Configuración de selectores (se cargará desde config.json)
         let selectors = [];
+        let servoPin = 18;
         let lastMatchedSelector = null;
         
         // Función para cargar configuración desde archivo JSON
@@ -386,8 +402,7 @@
                 const config = await response.json();
                 
                 selectors = config.selectors;
-                const ipInput = document.getElementById('tcp-ip');
-                if (ipInput) ipInput.value = (config.tcp_ip || '').toString();
+                servoPin = config.servo_pin;
                 
                 // Actualizar interfaz con la configuración cargada
                 updateInterfaceFromConfig();
@@ -408,8 +423,6 @@
                 { id: 3, color: '#0000ff', margin: 20, name: 'Azul' },
                 { id: 4, color: '#ffff00', margin: 20, name: 'Amarillo' }
             ];
-            const ipInput = document.getElementById('tcp-ip');
-            if (ipInput) ipInput.value = '';
             updateInterfaceFromConfig();
         }
         
@@ -419,9 +432,8 @@
             selectors.forEach(selector => {
                 const colorInput = document.getElementById(`color${selector.id}`);
                 const marginSlider = document.getElementById(`margin${selector.id}`);
-                const marginValue = marginSlider ? marginSlider.nextElementSibling : null;
+                const marginValue = document.querySelector(`#margin${selector.id} + .margin-value`);
                 const marginText = document.querySelector(`[data-id="${selector.id}"] .margin-text`);
-                
                 if (colorInput) colorInput.value = selector.color;
                 if (marginSlider) marginSlider.value = selector.margin;
                 if (marginValue) marginValue.textContent = selector.margin;
@@ -434,7 +446,6 @@
             try {
                 // Recopilar configuración actual
                 const config = {
-                    tcp_ip: (document.getElementById('tcp-ip')?.value || '').toString(),
                     selectors: selectors.map(selector => ({
                         id: selector.id,
                         color: selector.color,
@@ -522,19 +533,13 @@
                     const hexValue = document.getElementById('hex-value');
                     
                     // Actualiza el color del círculo
-                    if (colorBox) {
-                        colorBox.style.backgroundColor = data.hex;
-                    }
+                    colorBox.style.backgroundColor = data.hex;
                     
                     // Actualiza los valores RGB
-                    if (rgbValues) {
-                        rgbValues.textContent = `RGB: (${data.r}, ${data.g}, ${data.b})`;
-                    }
+                    rgbValues.textContent = `RGB: (${data.r}, ${data.g}, ${data.b})`;
                     
                     // Actualiza el valor hexadecimal
-                    if (hexValue) {
-                        hexValue.textContent = data.hex;
-                    }
+                    hexValue.textContent = data.hex;
                     
                     // Verifica coincidencias con los selectores
                     const detectedColor = { r: data.r, g: data.g, b: data.b };
@@ -543,11 +548,8 @@
                     selectors.forEach(selector => {
                         const targetColor = hexToRgb(selector.color);
                         const checkElement = document.getElementById(`check${selector.id}`);
-                        if (!targetColor || !checkElement) {
-                            return;
-                        }
-                        const margin = typeof selector.margin === 'number' ? selector.margin : 20;
-                        if (checkColorMatch(detectedColor, targetColor, margin)) {
+                        
+                        if (checkColorMatch(detectedColor, targetColor, selector.margin)) {
                             checkElement.textContent = '✅';
                             checkElement.className = 'check-indicator match';
                             matchedSelector = selector;
@@ -587,51 +589,55 @@
         
         // Configurar event listeners para los selectores
         function setupSelectors() {
-            // Configurar cada slider individualmente
-            setupSlider(1);
-            setupSlider(2);
-            setupSlider(3);
-            setupSlider(4);
-        }
-        
-        function setupSlider(id) {
-            const marginSlider = document.getElementById(`margin${id}`);
-            const colorInput = document.getElementById(`color${id}`);
-            const marginValueSpan = marginSlider ? marginSlider.nextElementSibling : null;
-            const marginTextSpan = document.querySelector(`[data-id="${id}"] .margin-text`);
-            
-            if (marginSlider) {
-                marginSlider.oninput = function(e) {
-                    const value = parseInt(e.target.value);
-                    
-                    // Actualizar el objeto selector
-                    const selector = selectors.find(s => s.id === id);
-                    if (selector) {
-                        selector.margin = value;
-                    }
-                    
-                    // Actualizar la interfaz
-                    if (marginValueSpan) {
-                        marginValueSpan.textContent = value;
-                    }
-                    if (marginTextSpan) {
-                        marginTextSpan.textContent = `Margen: ±${value}`;
-                    }
-                };
-            }
-            
-            if (colorInput) {
-                colorInput.onchange = function(e) {
-                    const selector = selectors.find(s => s.id === id);
-                    if (selector) {
-                        selector.color = e.target.value;
-                    }
-                };
-            }
+            selectors.forEach(selector => {
+                const colorInput = document.getElementById(`color${selector.id}`);
+                const marginSlider = document.getElementById(`margin${selector.id}`);
+                const marginValue = document.querySelector(`#margin${selector.id} + .margin-value`);
+                const marginText = document.querySelector(`[data-id="${selector.id}"] .margin-text`);
+                const angleInput = document.getElementById(`angle${selector.id}`);
+                
+                // Actualizar color
+                colorInput.addEventListener('change', (e) => {
+                    selector.color = e.target.value;
+                });
+                
+                // Actualizar margen
+                marginSlider.addEventListener('input', (e) => {
+                    selector.margin = parseInt(e.target.value);
+                    marginValue.textContent = e.target.value;
+                    marginText.textContent = `Margen: ±${e.target.value}`;
+                });
+                
+                // Actualizar ángulo
+                angleInput.addEventListener('input', (e) => {
+                    selector.angle = parseInt(e.target.value);
+                });
+            });
         }
         
         // Configurar event listeners para botones de configuración
         function setupConfigButtons() {
+            // Guardar pin del servo
+            document.getElementById('save-servo').addEventListener('click', () => {
+                servoPin = parseInt(document.getElementById('servo-pin').value);
+                saveConfiguration();
+            });
+            
+            // Guardar selector individual
+            document.querySelectorAll('.save-selector').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const selectorId = parseInt(e.target.dataset.id);
+                    const selector = selectors.find(s => s.id === selectorId);
+                    
+                    if (selector) {
+                        selector.color = document.getElementById(`color${selectorId}`).value;
+                        selector.margin = parseInt(document.getElementById(`margin${selectorId}`).value);
+                        selector.angle = parseInt(document.getElementById(`angle${selectorId}`).value);
+                        saveConfiguration();
+                    }
+                });
+            });
+            
             // Guardar toda la configuración
             document.getElementById('save-all-config').addEventListener('click', saveConfiguration);
             
@@ -643,61 +649,25 @@
                 useDefaultConfig();
                 saveConfiguration();
             });
-
-            // Enviar TCP 'servo1'
-            const btnSendTcp = document.getElementById('send-tcp');
-            if (btnSendTcp) {
-                btnSendTcp.addEventListener('click', async () => {
-                    const ipInput = document.getElementById('tcp-ip');
-                    const ip = ipInput ? ipInput.value.trim() : '';
-                    if (!ip) { showNotification('❌ Ingresa IP destino', 'error'); return; }
-                    try {
-                        const res = await fetch('/api/send-tcp', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ ip })
-                        });
-                        const data = await res.json();
-                        if (data.ok) {
-                            showNotification(`🔌 TCP enviado a ${ip}: servo1`, 'success');
-                        } else {
-                            showNotification('❌ Error TCP: ' + (data.error || 'desconocido'), 'error');
-                        }
-                    } catch (e) {
-                        showNotification('❌ Error de red TCP', 'error');
-                    }
-                });
-            }
         }
         
         // Inicializar
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             // Cargar configuración al inicio
-            loadConfiguration().then(() => {
-                // Configurar interfaz
-                setupSelectors();
-                setupConfigButtons();
-                
-                // Llamada inicial para pintar el color actual
-                updateColor();
-                
-                // Actualiza el color cada 100ms
-                setInterval(updateColor, 150);
-                
-                // Verifica el estado cada 2 segundos
-                setInterval(checkStatus, 2000);
-                
-                // Verificación inicial
-                checkStatus();
-            }).catch(() => {
-                // Incluso si falla la carga, inicializamos básicos
-                setupSelectors();
-                setupConfigButtons();
-                updateColor();
-                setInterval(updateColor, 150);
-                setInterval(checkStatus, 2000);
-                checkStatus();
-            });
+            await loadConfiguration();
+            
+            // Configurar interfaz
+            setupSelectors();
+            setupConfigButtons();
+            
+            // Actualiza el color cada 100ms
+            setInterval(updateColor, 100);
+            
+            // Verifica el estado cada 2 segundos
+            setInterval(checkStatus, 2000);
+            
+            // Verificación inicial
+            checkStatus();
         });
     </script>
 </body>
