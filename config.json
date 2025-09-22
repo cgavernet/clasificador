@@ -1,29 +1,29 @@
 {
-  "tcp_ip": "192.168.1.38",
   "selectors": [
     {
       "id": 1,
-      "color": "#928282",
-      "margin": 89,
+      "color": "#ff0000",
+      "margin": 86,
       "name": "Rojo"
     },
     {
       "id": 2,
       "color": "#00ff00",
-      "margin": 81,
+      "margin": 20,
       "name": "Verde"
     },
     {
       "id": 3,
       "color": "#0000ff",
-      "margin": 92,
+      "margin": 20,
       "name": "Azul"
     },
     {
       "id": 4,
       "color": "#ffff00",
-      "margin": 54,
+      "margin": 20,
       "name": "Amarillo"
     }
-  ]
+  ],
+  "tcp_ip": "192.168.0.100"
 }

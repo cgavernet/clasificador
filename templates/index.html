@@ -311,6 +311,9 @@
                 <div id="color-box" class="color-box"></div>
                 <div id="rgb-values" class="rgb-values">RGB: (0, 0, 0)</div>
                 <div id="hex-value" class="hex-value">#000000</div>
+                <input id="tcp-ip-input" type="text" placeholder="IP destino TCP" style="margin-top:10px; width:180px; text-align:center;" />
+                <button id="send-tcp-btn" class="save-btn" style="margin-top:10px;">Enviar color por TCP</button>
+                <div id="tcp-status" style="margin-top:10px; color:#333; font-size:0.95em;"></div>
             </div>
         </div>
         
@@ -390,9 +393,38 @@
     </div>
 
     <script>
+        // Botón para enviar el color detectado por TCP manualmente
+        document.addEventListener('DOMContentLoaded', () => {
+            const sendBtn = document.getElementById('send-tcp-btn');
+            const ipInput = document.getElementById('tcp-ip-input');
+            const tcpStatus = document.getElementById('tcp-status');
+            sendBtn.addEventListener('click', async () => {
+                try {
+                    const color = await fetch('/api/color').then(r => r.json());
+                    const ip = ipInput.value.trim();
+                    if (!ip) {
+                        tcpStatus.textContent = '⚠️ Ingresa la IP destino TCP.';
+                        return;
+                    }
+                    const res = await fetch('/api/send-tcp', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ ...color, tcp_ip: ip })
+                    });
+                    const result = await res.json();
+                    if (res.ok) {
+                        tcpStatus.textContent = `✅ Enviado: ${color.hex} a ${ip}`;
+                    } else {
+                        tcpStatus.textContent = `❌ Error: ${result.error || 'No se pudo enviar'}`;
+                    }
+                } catch (e) {
+                    tcpStatus.textContent = '❌ Error al enviar por TCP';
+                }
+            });
+        });
         // Configuración de selectores (se cargará desde config.json)
         let selectors = [];
-        let servoPin = 18;
+        let tcpIp = ""; // Variable para almacenar la IP TCP
         let lastMatchedSelector = null;
         
         // Función para cargar configuración desde archivo JSON
@@ -402,7 +434,7 @@
                 const config = await response.json();
                 
                 selectors = config.selectors;
-                servoPin = config.servo_pin;
+                tcpIp = config.tcp_ip || ""; // Cargar tcp_ip
                 
                 // Actualizar interfaz con la configuración cargada
                 updateInterfaceFromConfig();
@@ -423,6 +455,7 @@
                 { id: 3, color: '#0000ff', margin: 20, name: 'Azul' },
                 { id: 4, color: '#ffff00', margin: 20, name: 'Amarillo' }
             ];
+            tcpIp = ""; // Resetear tcp_ip a vacío
             updateInterfaceFromConfig();
         }
         
@@ -439,6 +472,9 @@
                 if (marginValue) marginValue.textContent = selector.margin;
                 if (marginText) marginText.textContent = `Margen: ±${selector.margin}`;
             });
+            // Actualizar el campo de IP TCP
+            const tcpIpInput = document.getElementById('tcp-ip-input');
+            if (tcpIpInput) tcpIpInput.value = tcpIp;
         }
         
         // Función para guardar configuración
@@ -451,7 +487,8 @@
                         color: selector.color,
                         margin: selector.margin,
                         name: selector.name
-                    }))
+                    })),
+                    tcp_ip: document.getElementById('tcp-ip-input').value.trim() // Incluir tcp_ip
                 };
                 const response = await fetch('/api/config', {
                     method: 'POST',
@@ -545,11 +582,20 @@
                     const detectedColor = { r: data.r, g: data.g, b: data.b };
                     let matchedSelector = null;
                     
+                    console.log('Detected Color:', detectedColor);
+
                     selectors.forEach(selector => {
                         const targetColor = hexToRgb(selector.color);
                         const checkElement = document.getElementById(`check${selector.id}`);
+                        const distance = colorDistance(detectedColor, targetColor);
+
+                        console.log(`Selector ${selector.id} (${selector.name}):`);
+                        console.log(`  Target Color:`, targetColor);
+                        console.log(`  Margin:`, selector.margin);
+                        console.log(`  Distance:`, distance);
+                        console.log(`  Match:`, distance <= selector.margin);
                         
-                        if (checkColorMatch(detectedColor, targetColor, selector.margin)) {
+                        if (distance <= selector.margin) {
                             checkElement.textContent = '✅';
                             checkElement.className = 'check-indicator match';
                             matchedSelector = selector;
@@ -594,49 +640,55 @@
                 const marginSlider = document.getElementById(`margin${selector.id}`);
                 const marginValue = document.querySelector(`#margin${selector.id} + .margin-value`);
                 const marginText = document.querySelector(`[data-id="${selector.id}"] .margin-text`);
-                const angleInput = document.getElementById(`angle${selector.id}`);
+                // const angleInput = document.getElementById(`angle${selector.id}`); // Eliminado, ya no existe en HTML
                 
                 // Actualizar color
-                colorInput.addEventListener('change', (e) => {
-                    selector.color = e.target.value;
-                });
+                if (colorInput) {
+                    colorInput.addEventListener('change', (e) => {
+                        selector.color = e.target.value;
+                    });
+                }
                 
                 // Actualizar margen
-                marginSlider.addEventListener('input', (e) => {
-                    selector.margin = parseInt(e.target.value);
-                    marginValue.textContent = e.target.value;
-                    marginText.textContent = `Margen: ±${e.target.value}`;
-                });
+                if (marginSlider) {
+                    marginSlider.addEventListener('input', (e) => {
+                        selector.margin = parseInt(e.target.value);
+                        marginValue.textContent = e.target.value;
+                        marginText.textContent = `Margen: ±${e.target.value}`;
+                    });
+                }
                 
-                // Actualizar ángulo
-                angleInput.addEventListener('input', (e) => {
-                    selector.angle = parseInt(e.target.value);
-                });
+                // Actualizar ángulo (eliminado, ya no existe en HTML)
+                // if (angleInput) {
+                //     angleInput.addEventListener('input', (e) => {
+                //         selector.angle = parseInt(e.target.value);
+                //     });
+                // }
             });
         }
         
         // Configurar event listeners para botones de configuración
         function setupConfigButtons() {
-            // Guardar pin del servo
-            document.getElementById('save-servo').addEventListener('click', () => {
-                servoPin = parseInt(document.getElementById('servo-pin').value);
-                saveConfiguration();
-            });
+            // Guardar pin del servo (eliminado)
+            // document.getElementById('save-servo').addEventListener('click', () => {
+            //     servoPin = parseInt(document.getElementById('servo-pin').value);
+            //     saveConfiguration();
+            // });
             
-            // Guardar selector individual
-            document.querySelectorAll('.save-selector').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const selectorId = parseInt(e.target.dataset.id);
-                    const selector = selectors.find(s => s.id === selectorId);
+            // Guardar selector individual (eliminado, ya que los ángulos no se editan individualmente)
+            // document.querySelectorAll('.save-selector').forEach(btn => {
+            //     btn.addEventListener('click', (e) => {
+            //         const selectorId = parseInt(e.target.dataset.id);
+            //         const selector = selectors.find(s => s.id === selectorId);
                     
-                    if (selector) {
-                        selector.color = document.getElementById(`color${selectorId}`).value;
-                        selector.margin = parseInt(document.getElementById(`margin${selectorId}`).value);
-                        selector.angle = parseInt(document.getElementById(`angle${selectorId}`).value);
-                        saveConfiguration();
-                    }
-                });
-            });
+            //         if (selector) {
+            //             selector.color = document.getElementById(`color${selectorId}`).value;
+            //             selector.margin = parseInt(document.getElementById(`margin${selectorId}`).value);
+            //             selector.angle = parseInt(document.getElementById(`angle${selectorId}`).value);
+            //             saveConfiguration();
+            //         }
+            //     });
+            // });
             
             // Guardar toda la configuración
             document.getElementById('save-all-config').addEventListener('click', saveConfiguration);
