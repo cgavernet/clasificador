@@ -305,13 +305,14 @@ class ColorDetector:
                         # Coincide: enviar 'servo1' ahora y 'servo2' en 5s
                         self._send_tcp_safe(tcp_ip, b'servo1')
                         self._last_tcp_sent = now
-                        # Establecer ventana de silencio de 20s
-                        self._suppress_until = now + 20.0
+                       
                         if not self._pending_servo2:
                             self._pending_servo2 = True
                             timer = threading.Timer(5.0, self._send_servo2_then_clear, args=(tcp_ip,))
                             timer.daemon = True
                             timer.start()
+                        # Establecer ventana de silencio de 20s
+                        self._suppress_until = now + 20.0
                         break
                 except Exception:
                     continue
